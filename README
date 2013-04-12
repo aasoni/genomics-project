@@ -1,8 +1,7 @@
 Computational Genomics 2013 JHU Final Project
 
-Notes: year month day
+Put main notes here: year month day
 13.4.12
-
 enhancer data:
 sequences around 800bp long
 kmer size to use: 20
@@ -11,4 +10,6 @@ number of negative (not enhancer) sequences: 4000
 
 use java for bloomfilter
 
--working on javabloomfilter - Kyle
+-working on javabloomfilter - Kyle 13.4.12
+-working on kmers (python) Neighborhoods (hamming distance) - Alessandro 13.4.12
+
