@@ -14,3 +14,4 @@ use java for bloomfilter
 -working on kmers (python) Neighborhoods (hamming distance) - Alessandro 13.4.12
 -currently working on hmm tutorial in matlab (profile analysis) - Guannan 13.4.14
 
+-first draft of kmer neighberhood feature extraction. (terrible performance) - Alessandro 13.4.14
