@@ -33,6 +33,8 @@ import string
 import os
 import argparse
 import numpy
+from bitarray import bitarray
+from bitarray import bitdiff
 
 parser = argparse.ArgumentParser(description="Create feature vectors from kmer counts")
 parser.add_argument("-k", "--k", type=int, help="kmer length", default=20)
@@ -47,6 +49,7 @@ def kedDistDp(x, y, k):
         matrix dynamic programming.  Return distance. """
     D = numpy.zeros((len(x)+1, len(y)+1), dtype=int)
     D[:] = k+1
+    D[0,0] = 0
     D[0, 1:] = range(1, len(y)+1)
     D[1:, 0] = range(1, len(x)+1)
     for i in xrange(1, len(x)+1):
@@ -55,67 +58,11 @@ def kedDistDp(x, y, k):
             D[i, j] = min(D[i-1, j-1]+delt, D[i-1, j]+1, D[i, j-1]+1)
     return D[len(x), len(y)] <= k
 
-def khammDist(x, y, k):
-    """ Calculuate hamming distance between sequences x and y """
+def bitHammDist(x, y):
+    """ Calculuate bitwise hamming distance  """
     assert len(x) == len(y)
-    nmm = 0
-    for i in xrange(0,	len(x)):
-        if x[i]	!= y[i]:
-            nmm += 1
-            if nmm > k:
-                return False
+
     return True
-
-def partition(p, parts=2):
-    """ Divide p into non-overlapping partitions. If there are excess
-    characters, distribute them round-robin starting with 1st. """
-    base, mod = len(p) / parts, len(p) % parts
-    idx = 0
-    ps = []
-
-    modAdjust = 1
-    for i in xrange(0, parts):
-        if i >= mod:
-            modAdjust = 0
-        newIdx = idx + base + modAdjust
-        ps.append((p[idx:newIdx], idx))
-        idx = newIdx
-    return ps
-
-class kmerIndex(object):
-    """ Substring index using hash table map. Maps substrings to kmers in which
-    they occur """
-
-    def __init__(self, ln=12, t=0, gaps=True):
-        """ Create index with substrings of length 'ln' """
-        self.ln = ln
-        self.index = {}
-        self.gaps = gaps
-
-        # number of edits/mismatches 
-        self.t = t  
-
-    def query(self, p):
-        """ Return candidate kmers for p """
-        return self.index.get(p[:self.ln]) or []
-
-    def insert(self, kmer):
-        """ insert kmer in index if it doesn't appear already with up to t
-        edits/mismatches """
-        for part, off in partition(kmer, self.t+1):
-            for hit in self.query(part):
-                d = 0
-                if self.gaps and kedDistDp(kmer, hit, self.t):
-                    return
-                elif khammDist(kmer, hit, self.t):
-                    return
-                
-        l = self.ln
-        for i in xrange(0, len(kmer)-l+1):
-            substr = kmer[i:i+l]
-            if substr not in self.index:
-                self.index[substr] = []
-            self.index[substr].append(kmer)
 
 def readFasta(fn):
     """ Read a fasta file. Return list of sequences """
@@ -153,15 +100,40 @@ for seq in posSeqList:
 for seq in negSeqList:
     klist.extend( kmerInSeq(seq, args.k) )
 
-kset = list(set(klist))
-kmerIndex = kmerIndex(args.k/(args.threshold+1),args.threshold,True)
+klist = list(set(klist))
 
-count = 0
-for k in kset:
-    if count == 1000:
-        break
-    kmerIndex.insert(k)
-    count = count+1
+print "Done extracting all substrings of length " + repr(args.k) + " appearing in all sequences ... "
+print repr(len(klist)) + " distinct kmers extracted ... "
 
-print len(kmerIndex.index)
+encoding = {'A':bitarray('0001'), 'G':bitarray('0010'), 'C':bitarray('0100'), 'T':bitarray('1000')}
+encodedklist = []
+for kmer in klist:
+    a = bitarray()
+    a.encode(encoding,kmer)
+    encodedklist.append(a)
 
+print "Done encoding all kmers as bit arrays ... "
+print "Starting compression of kmer set using hamming distance " + repr(args.threshold) + " ... "
+
+#variables to keep track of progress
+progress_count = 0
+total = len(encodedklist)
+
+#bitmask to keep track of kmers that can be eliminated
+junk = bitarray(total)
+
+for i in xrange(0, len(encodedklist)):
+    if progress_count % 5000 == 0:
+        p = progress_count/float(total)
+        sys.stdout.write("\r%.2f%%" %p)
+        sys.stdout.flush()
+    progress_count += 1
+    print progress_count
+
+    if junk[i]: continue
+    for j in xrange(0, len(encodedklist)):
+        if bitdiff(encodedklist[i],encodedklist[j])/2 <= args.threshold:
+            junk[j] = 1
+
+print
+print junk.count()
