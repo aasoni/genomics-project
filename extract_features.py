@@ -58,12 +58,6 @@ def kedDistDp(x, y, k):
             D[i, j] = min(D[i-1, j-1]+delt, D[i-1, j]+1, D[i, j-1]+1)
     return D[len(x), len(y)] <= k
 
-def bitHammDist(x, y):
-    """ Calculuate bitwise hamming distance  """
-    assert len(x) == len(y)
-
-    return True
-
 def readFasta(fn):
     """ Read a fasta file. Return list of sequences """
     reads = []
