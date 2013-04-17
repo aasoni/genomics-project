@@ -15,3 +15,17 @@ use java for bloomfilter
 -currently working on hmm tutorial in matlab (profile analysis) - Guannan 13.4.14
 
 -first draft of kmer neighberhood feature extraction. (terrible performance) - Alessandro 13.4.14
+-first draft of bloomfilter: Kyle 13.4.17 (runs fast but ~50% accuracy with defaults)
+kmer_size | %positive called correctly | % negative called correctly | average difference of +/- kmer calls per read
+100     46.00%      52%       5.9293
+50      49.75%      50.4%     7.1878
+30      54.81%      54.5%     7.8611
+20      50.89%      54.5%     8.5579
+10      0.16%       99.9%     67.8815
+5       0%          100%      0
+
+I think as the kmer size gets small, the number of false positives 
+from having a larger negative input file causes everything to be identified
+as a negative read (not classified as enhancer).
+
+Either way, the default hash functions end up with only about 50% correctness.
