@@ -83,22 +83,26 @@ class HMM(object):
         # Fill in first column
         for i in xrange(0, nrow):
             mat[i, 0] = self.E[i, x[0]] * self.I[i]
-            # print mat[i,0]   #0.5*0.5, 0.5*0.2
+            # print mat[i,0]   #0.5*0.5, 0.2*0.5
+            # print self.E[i, x[0]]
         # Fill in rest of prob and Tb tables
         for j in xrange(1, ncol):
             for i in xrange(0, nrow):
                 ep = self.E[i, x[j]]
+                # print ep
                 mx, mxi = mat[0, j-1] * self.A[0, i] * ep, 0
                 for i2 in xrange(1, nrow):
                     pr = mat[i2, j-1] * self.A[i2, i] * ep
                     if pr > mx:
                         mx, mxi = pr, i2
                 mat[i, j], matTb[i, j] = mx, mxi
+
         # Find final state with maximal probability
         omx, omxi = mat[0, ncol-1], 0
         for i in xrange(1, nrow):
             if mat[i, ncol-1] > omx:
                 omx, omxi = mat[i, ncol-1], i
+                
         # Traceback
         i, p = omxi, [omxi]
         for j in xrange(ncol-1, 0, -1):
@@ -148,5 +152,5 @@ hmm = HMM({"FF":0.6,"FL":0.4,"LF":0.4,"LL":0.6},{"FH":0.5,"FT":0.5,"LH":0.8,"LT"
 # prob,_ = hmm.viterbiL("THTHHHTHTTH")  #-18
 # prob,_ = hmm.viterbiL("HHHHHHHHHHH")  #-11
 # prob,_ = hmm.viterbiL("TTTTTTTTTTT")  #-19
-prob,_ = hmm.viterbi("TTTTTTTTTTT")
+prob,_ = hmm.viterbi("TTTTTTTTTTH")
 # print prob
