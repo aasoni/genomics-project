@@ -1,0 +1,6 @@
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Bacillus_anthracis/NC_003997.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Bacillus_anthracis/NC_005945.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Bacillus_anthracis/NC_007530.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Bacillus_anthracis/NC_012581.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Bacillus_anthracis/NC_012659.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Bacillus_anthracis/NC_017729.fna

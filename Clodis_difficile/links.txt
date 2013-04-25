@@ -1,0 +1,7 @@
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_009089.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_013315.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_013316.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_017173.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_017174.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_017178.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Clostridium_difficile/NC_017179.fna

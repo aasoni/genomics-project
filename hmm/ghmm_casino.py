@@ -4,7 +4,7 @@ from UnfairCasino import *
 
 sigma = IntegerRange(1,7)
 
-A = [[0.9, 0.1], [0.3, 0.7]]
+A = [[0.5, 0.5], [0.5, 0.5]]
 efair = [1.0 / 6] * 6
 #print efair
 eloaded = [3.0 / 13, 3.0 / 13, 2.0 / 13, 2.0 / 13, 2.0 / 13, 1.0 / 13]
@@ -21,9 +21,11 @@ obs = map(sigma.external, obs_seq)
 
 # print train_seq
 m.baumWelch(train_seq)
-v = m.viterbi(test_seq)
+# print train_seq
+print m
+v,log = m.viterbi(test_seq)
 # print v
-my_seq = EmissionSequence(sigma, [1] * 20 + [6] * 10 + [1] * 40)
+# my_seq = EmissionSequence(sigma, [1] * 20 + [6] * 10 + [1] * 40)
 # print my_seq
-print m.viterbi(my_seq)
+# print m.viterbi(my_seq)
 

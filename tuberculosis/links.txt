@@ -1,0 +1,15 @@
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_000962.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_002755.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_009525.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_009565.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_012943.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_016768.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_016934.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_017026.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_017522.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_017523.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_017524.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_017528.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_018078.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_018143.fna
+ftp://ftp.ccb.jhu.edu/pub/langmead/bacterial_genomes/Mycobacterium_tuberculosis/NC_020559.fna
