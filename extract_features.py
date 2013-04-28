@@ -12,23 +12,45 @@ It reads two sequence files in FASTA format. For each file it must be
 specified if the data belongs to the positive or negative set.
 
 All kmers of a specified length 'k' are extracted from both files. 
-If the option 'neighbors' is set to false, the set of extracted kmers is 
-compressed so that the hamming) distance between any
-two remaining kmers is greater than a specified threshold 't'.
+If the option 'neighbors' is not set, the set of extracted kmers is 
+compressed so that the hamming distance between any two remaining kmers is 
+greater than a specified threshold 't'.
 Each remaining kmer corresponds to a feature. For every read in the two files
-the number of times each kmer appears with up to 't' edits correspends to the value of
-the feature associated with it. 
+the number of times each kmer appears with up to 't' mismatches correspends to 
+the value of the feature associated with it. 
+
+If the option neighbors is set then for each extracted kmer all string
+neighbors within edit (or hamming) distance t are generated, and each one is
+associated with the same feature number in a Map. The input DNA sequences are
+then parsed and the feature counts are obtained with a lookup in this Map
+
+If the option neighbors is not set then each read in the FASTFA files is
+processed by looking at each kmer in the read and incrementing the count of all the
+kmers in the feature set whose hamming distance from that kmer is smaller than 
+the threshold 't'.
+
+If 'edit' distance is chosen, the option neighbors defaults to true. This is for
+performance reasons. Using the dynamic programming approach to calculate edit
+distance is very slow.
+
+When the option --skip is set, only every t-th kmer is read in from the FASTFA
+files. This option deafaults to true if 'edit' distance is chosen, because any
+kmer that is skipped this way is necessarily in the t-neighborhood of the kmers
+that are included.
+It is recommended to always use this option for long kmers (k > 15) even when
+using hamming distance. This is for performance reasons.
 
 The following is a usage example:
 
-    using edit distance:
-        feature_extraction -k kmer_size -t threshold -d edit -n false epositive.fa negative.fa 
-    using hamming distance:
-        feature_extraction -k kmer_size -t threshold -d hamm -n false positive.fa negative.fa
+    using edit distance (with neighbors, with skipping):
+        feature_extraction -k kmer_size -t threshold -d edit --neighbors --skip epositive.fa negative.fa 
+    using hamming distance (without neighbors, without skipping):
+        feature_extraction -k kmer_size -t threshold -d hamm positive.fa negative.fa
 
-Using neighbors is only racommended for small k for performance.
-This option assigns the same feature number to each string in the t-neighborhood
-of each extracted kmer. 
+Using neighbors (and therefore edit distance) is only racommended for small k.
+For long kmers (k > 10) using neighbors becomes intractable. 
+
+IMPORTANT: This script makes use of the python library 'bitarray'
 """
 
 
@@ -37,6 +59,7 @@ import string
 import os
 import argparse
 import numpy
+import math
 from bitarray import bitarray
 from bitarray import bitdiff
 
@@ -44,24 +67,20 @@ parser = argparse.ArgumentParser(description="Create feature vectors from kmer c
 parser.add_argument("-k", "--k", type=int, help="kmer length", default=20)
 parser.add_argument("-t", "--threshold", type=int, help="kmer neighborhood threshold", default=3)
 parser.add_argument("-d", "--distance", choices=["edit", "hamm"], help="distance scheme")
-parser.add_argument("-n", "--neighbors", choices=["true", "false"], help="use neighbors")
+parser.add_argument("--neighbors", help="use neighbors to create feature map", action="store_true")
+parser.add_argument("--skip", help="extract every t-th kmer", action="store_true")
 parser.add_argument("pos", help="positive data set")
 parser.add_argument("neg", help="negative data set")
 args = parser.parse_args()
+print args
 
-def kedDistDp(x, y, k):
-    """ Calculate edit distance between sequences x and y using
-        matrix dynamic programming.  Return distance <= k. """
-    D = numpy.zeros((len(x)+1, len(y)+1), dtype=int)
-    D[:] = k+1
-    D[0,0] = 0
-    D[0, 1:] = range(1, len(y)+1)
-    D[1:, 0] = range(1, len(x)+1)
-    for i in xrange(1, len(x)+1):
-        for j in xrange(max(1, i-k), min(i+k+1,len(y)+1)):
-            delt = 1 if x[i-1] != y[j-1] else 0
-            D[i, j] = min(D[i-1, j-1]+delt, D[i-1, j]+1, D[i, j-1]+1)
-    return D[len(x), len(y)] <= k
+if args.distance == "edit" and not args.neighbors:
+    print "Warning. 'edit' distance only supported using neighbors. Option --neighbors is set here!"
+    args.neighbors = True
+
+if args.distance == "edit" and not args.skip:
+    print "Using 'edit' distance. Setting option --skip"
+    args.skip = True
 
 def khammDist(x, y, k):
     assert len(x) == len(y)
@@ -121,7 +140,7 @@ def kmerInSeq(seq, k, t, skip):
     """ Read a sequence. Return list of kmers extracted """
     kmerList = []
     if skip: 
-        for i in xrange(0, len(seq)-k+1, t):
+        for i in xrange(0, len(seq)-k+1, t+1):
             substr = seq[i:i+k]
             kmerList.append(substr)
     else:
@@ -153,17 +172,10 @@ def createFeatureVector(pos_neg, seq, features, k, t, edit, neighb):
     else:
         for (kmer,feature) in features.items():
             for i in xrange(0,len(seq)-k+1):
-                substr = seq[i:i+k]
-                if edit:
-                    if kedDistDp(kmer, substr, t):
-                        if feature not in feature_vector:
-                            feature_vector[feature] = 0
-                        feature_vector[feature] += 1
-                else:
-                    if khammDist(kmer, substr, t):
-                        if feature not in feature_vector:
-                            feature_vector[feature] = 0
-                        feature_vector[feature] += 1
+                if khammDist(kmer, substr, t):
+                    if feature not in feature_vector:
+                        feature_vector[feature] = 0
+                    feature_vector[feature] += 1
         
     feature_list = []
     for (feature, count) in feature_vector.items():
@@ -178,19 +190,14 @@ def createFeatureVector(pos_neg, seq, features, k, t, edit, neighb):
 posSeqList = readFasta(args.pos)
 negSeqList = readFasta(args.neg)
 
-neighb = args.neighbors == "true"
-edit = args.distance == "edit"
-
-#dont' skip kmers when using neighborhoods
-skip = not neighb
 
 kset = set() 
 for seq in posSeqList:
-    for kmer in kmerInSeq(seq, args.k, args.threshold, skip):
+    for kmer in kmerInSeq(seq, args.k, args.threshold, args.skip):
         kset.add( kmer )
 
 for seq in negSeqList:
-    for kmer in kmerInSeq(seq, args.k, args.threshold, skip):
+    for kmer in kmerInSeq(seq, args.k, args.threshold, args.skip):
         kset.add( kmer )
 
 klist = list(kset)
@@ -206,11 +213,12 @@ f = 1
 progress_count = 0
 total = len(klist)
 
+edit = args.distance == "edit"
 #using neighbors
-if neighb:
+if args.neighbors:
     print "Using neighbors to create string->feature mapping ... "
     for k in xrange(0,len(klist)):
-        if progress_count % (total/1000) == 0:
+        if progress_count % math.ceil(total/1000.0) == 0:
             p = (float(progress_count)/total)*100
             sys.stdout.write("\r%.2f%% progress. " % p)
             sys.stdout.flush()
@@ -241,7 +249,7 @@ else:
     junk = bitarray(total)
     junk.setall(False)
     for i in xrange(0, len(encodedklist)):
-        if progress_count % (total/10000) == 0:
+        if progress_count % math.ceil(total/10000.0) == 0:
             p = (float(progress_count)/total)*100
             reduction = total - junk.count()
             sys.stdout.write("\r%.2f%% progress. " % p + "Feature set reduced to %d kmers ... " % reduction)
@@ -273,13 +281,13 @@ f = open(output,'w')
 progress_count = 0
 total = len(posSeqList)
 for seq in posSeqList:
-    if progress_count % (total/100) == 0:
+    if progress_count % math.ceil(total/100.0) == 0:
         p = (float(progress_count)/total)*100
         sys.stdout.write("\r%.2f%% progress ..." % p)
         sys.stdout.flush()
     progress_count += 1
 
-    feature_vector = createFeatureVector('1', seq, featureMap, args.k, args.threshold, edit, neighb)
+    feature_vector = createFeatureVector('1', seq, featureMap, args.k, args.threshold, edit, args.neighbors)
     f.write(feature_vector)
     f.write("\n")
 print
@@ -294,13 +302,13 @@ f = open(output,'w')
 progress_count = 0
 total = len(negSeqList)
 for seq in negSeqList:
-    if progress_count % (total/100) == 0:
+    if progress_count % math.ceil(total/100.0) == 0:
         p = (float(progress_count)/total)*100
         sys.stdout.write("\r%.2f%% progress ..." % p)
         sys.stdout.flush()
     progress_count += 1
 
-    feature_vector = createFeatureVector('-1', seq, featureMap, args.k, args.threshold, edit, neighb)
+    feature_vector = createFeatureVector('-1', seq, featureMap, args.k, args.threshold, edit, args.neighbors)
     f.write(feature_vector)
     f.write("\n")
 
