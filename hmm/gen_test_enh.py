@@ -4,10 +4,6 @@ import sys
 import random
 import argparse
 
-# denotation - 	ecoli 0
-#				staph 1
-#				difficile 2
-
 indir = '../'
 rand_seq = ""
 marker = ""
@@ -18,7 +14,8 @@ null_ind = []
 # parser.add_argument("test_input", help="test data set")
 # parser.add_argument("test_check", help="actual result set")
 # args = parser.parse_args()
-
+num_enh = 1
+num_null = 1
 for root, dirs, filenames in os.walk(indir):
   for f in filenames:
     if 'enh_fb' in f:
@@ -38,6 +35,7 @@ for root, dirs, filenames in os.walk(indir):
         input_str = input_str.strip().upper()
         if '>' in input_str:
           if enh_ind_count in enh_ind:
+            num_enh += 1
             print input_str
             print temp_seq
           temp_seq = ""
@@ -63,6 +61,7 @@ for root, dirs, filenames in os.walk(indir):
         input_str = input_str.strip().upper()
         if '>' in input_str:
           if null_ind_count in null_ind:
+            num_null += 1
             print input_str
             print temp_seq
           temp_seq = ""
@@ -73,3 +72,6 @@ for root, dirs, filenames in os.walk(indir):
         print input_str
         print temp_seq
       log_null.close()
+print "Number of enhancer sequences at the start: " + str(num_enh)
+print "Number of non-enhancer sequences at the end: " + str(num_null)
+    
