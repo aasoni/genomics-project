@@ -1,0 +1,9 @@
+percent accuracy:
+
+first order : 70.9302325581 %
+second order : 76.3255813953 %
+third order: 78.0465116279 %
+fourth order: 80.9302325581 %
+fifth order : 82.5581395349 %
+sixth order : killed during classification runtime
+seventh order : out of memory storing tables

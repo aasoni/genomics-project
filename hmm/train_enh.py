@@ -6,22 +6,22 @@ import argparse
 import itertools
 
 def extract_kmer(s,ln,transition_dict,tot_kmer_count):
-	for i in xrange (0,len(s)-ln):  #took away +1
-		if s[i:i+ln] not in transition_dict:
-			bp = ['A','C','T','G']
-			dna = ln*[bp]
-			kmers = list(itertools.product(*dna))
-			kmer_dict = {}
-			for i in xrange(len(kmers)):
-				kmer_dict[''.join(kmers[i])] = 0
-			transition_dict[(s[i:i+ln])] = kmer_dict
+	for i in xrange (0,len(s)-ln):
+		# if s[i:i+ln] not in transition_dict:
+		# 	bp = ['A','C','T','G']
+		# 	dna = ln*[bp]
+		# 	kmers = list(itertools.product(*dna))
+		# 	kmer_dict = {}
+		# 	for i in xrange(len(kmers)):
+		# 		kmer_dict[''.join(kmers[i])] = 0
+		# 	transition_dict[(s[i:i+ln])] = kmer_dict
 		transition_arr = transition_dict[(s[i:i+ln])]
 		if s[i+1:i+ln+1] not in transition_arr:
 			transition_arr[s[i+1:i+ln+1]] = 0			
 		transition_arr[s[i+1:i+ln+1]] += 1
 		transition_dict[(s[i:i+ln])] = transition_arr
 		if s[i:i+ln] not in tot_kmer_count:
-			tot_kmer_count[s[i:i+ln]] = 0			
+			tot_kmer_count[s[i:i+ln]] = 0
 		tot_kmer_count[s[i:i+ln]] += 1
 
 if __name__ == '__main__':
@@ -30,19 +30,21 @@ if __name__ == '__main__':
 	parser.add_argument("which", help="input which (enh or null) data set")
 	args = parser.parse_args()
 
-	ln = 2
+	ln = 5
 	bp = ['A','C','T','G']
 	dna = ln*[bp]
 	kmers = list(itertools.product(*dna))
 	kmer_dict = {}
 	for i in xrange(len(kmers)):
-		kmer_dict[''.join(kmers[i])] = 0
+		kmer_dict_dict = {}
+		for j in xrange(len(kmers)):   #trying to get rid of shared memory
+			kmer_dict_dict[''.join(kmers[j])] = 0
+		kmer_dict[''.join(kmers[i])] = kmer_dict_dict
 	# print kmer_dict
 
 	temp_seq = ""
 	tot_kmer_count = 0
 	read_count = 1
-	kmer_dict = {}
 	tot_kmer_count = {}
 	with open(args.seq, 'r') as fafh:
 		input_str = fafh.readline()  #get rid of initial >
@@ -52,33 +54,39 @@ if __name__ == '__main__':
 			input_str = input_str.strip().upper()
 
 			if '>' in input_str:
-				extract_kmer(temp_seq,ln,kmer_dict,tot_kmer_count)
+				if args.which == "enhancer":
+					if read_count < 2*2453/3:
+						extract_kmer(temp_seq,ln,kmer_dict,tot_kmer_count)
+				if args.which == "null":
+					if read_count < 2*4000/3:
+						extract_kmer(temp_seq,ln,kmer_dict,tot_kmer_count)
 				temp_seq = ""
 				read_count += 1
 			else:
 				temp_seq += input_str
-		extract_kmer(temp_seq,ln,kmer_dict,tot_kmer_count)
-	# tot_percent = 0
 	for k in sorted(kmer_dict.iterkeys()):
-	# for k in kmer_dict:
 		k_dict_dict = kmer_dict[k]
+		tot_count = sum(k_dict_dict.values())
+		# print k + str(tot_kmer_count[k]) + str(k_dict_dict)  #tot_kmer_count not working, added tot_count
 		for j in k_dict_dict:
-			k_dict_dict[j] = float(k_dict_dict[j])/float(tot_kmer_count[k])
+			# k_dict_dict[j] = float(k_dict_dict[j])/float(tot_kmer_count[k])
+			k_dict_dict[j] = float(k_dict_dict[j])/float(tot_count)
+			if k_dict_dict[j] == 0.0:
+				k_dict_dict[j] = 0.0001
 		if args.which == "enhancer":
 			dummy_arr = []
 			for i in sorted(k_dict_dict.iterkeys()):
 				dummy_arr.append(k_dict_dict[i])
-			# dummy_arr = k_dict_dict.values()
-			dummy_arr.extend([0.0]*(4**ln))
-			print k + str(dummy_arr)
+			# dummy_arr.extend([0.0]*(4**ln))
+			print str(dummy_arr) + ","
 		elif args.which == "null":
-			dummy_arr = [0.0]*(4**ln)
+			# dummy_arr = [0.0]*(4**ln)
+			dummy_arr = []
 			for i in sorted(k_dict_dict.iterkeys()):
 				dummy_arr.append(k_dict_dict[i])
-			# dummy_arr.extend(k_dict_dict.values())
-			print k + str(dummy_arr)
+			print str(dummy_arr) + ","
 
-	print "-------------------transition------------------------"
+	# print "-------------------transition------------------------"
 	bp = ['A','C','G','T']
 	dna = ln*[bp]
 	kmers = list(itertools.product(*dna))
@@ -97,4 +105,4 @@ if __name__ == '__main__':
 		elif j[-1:] == 'G':
 			temp_arr[2] = 1;
 		kmer_dict[j] = temp_arr
-		print j + str(kmer_dict[j])
+		# print j + str(kmer_dict[j])
