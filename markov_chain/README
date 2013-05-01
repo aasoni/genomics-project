@@ -1,0 +1,30 @@
+Programmer: Guannan Ren
+Programs used for markov chain classification: class_enh.py (under markov_chain directory), train_enh.py (under hmm directory) 
+Program used to print data for creating the test file: gen_test_enh.py (under hmm directory)
+
+"train_enh.py"
+------------------------------------------------------------------------------------------------------------------
+Program function: The program prints out the transition matrix for the sequences of data supplied. For each sequence of data, the sequence and the transition table accumulated from sequences before are passed into the extract_kmer method. Within the extract_kmer method, each pair of length "ln" kmer from every possible offset and the length "ln" kmer that immediately follows tells which cell of the transition table to update the occurrence count for. The program iterates through all training sequences supplied and the Markov chain probability table is updated with each sequence. At the end, each state's probabilities should sum up to approximately 1. Because there are certain transitions that are impossible to happen (ie. ACT->GGG), we would assign the probability 0.0001 to them (slightly over 0 so log2 will not cause trouble later). 
+
+This program currently takes in two input arguments. The first input argument specifies the location of the data file used for training, and the second input argument specifies whether the data provided is "enhancer" or "null" data. The second parameter was mainly used for HMM transition table construction to tell the program where to pad 0's in the matrix, so it currently has no use for Markov Chain table construction.
+
+Example program execution syntax : $ ./train_enh.py ../enh_fb.fa enhancer > __output_file_name__
+
+Currently, no input parameter for specifying the order of the Markov Chain is implemented, so the variable "ln" needs to be changed for different orders. 
+
+The raw output data is not in the right format, so several things need to be changed. The entire data set is assigned to a variable (ie. enh_table_4 for enhancer probability table for fourth order chain). See example data files such as enh_prob_3.py in markov_chain directory.
+
+Please ignore the code for emission table generation at the end.
+
+
+"class_enh.py"
+-------------------------------------------------------------------------------------------------------------------
+Program function: The program is very similar to the CpGIslandMarkovChain.py discussed in class. The markov chain probability tables for an enhancer region and for an non-enhancer region are supplied from external files (see "train_enh.py" for construction of the tables). In the classification step, we would call "classify" function for each test sequence. The difference of the logs of the enhancer and non-enhancer tables are supplied as the final table used for classification. During classification, each transition step (a new nucleotide base) leads to another value accumulated to the final value. A positive final value returned means that the classifier calls the test sequence an enhancer sequence, and vice versa. For this particular test data, there are 818 enhancer sequences followed by non-enhancer sequences. This program takes in a single input argument specifying the test sequence file location.
+
+Example program execution syntax : $ ./class_enh.py enh_test
+
+Possible improvements to the current setup would be to randomize the test sequences from the total set. Also, randomizing the order of the enhancer/non-enhancers in the test set is crucial.
+
+"gen_test_enh.py"
+---------------------------------------------------------------------------------------------------------------
+Program function: does not take any input parameter, but finds the files by their directory location. Currently prints ">" followed by the sequence for the last one-third of the enhancer and the non-enhancer sequences in the original files. 

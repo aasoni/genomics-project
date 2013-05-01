@@ -55,10 +55,10 @@ if __name__ == '__main__':
 
 			if '>' in input_str:
 				if args.which == "enhancer":
-					if read_count < 2*2453/3:
+					if read_count < 2*2453/3:  #using two-thirds data for training
 						extract_kmer(temp_seq,ln,kmer_dict,tot_kmer_count)
 				if args.which == "null":
-					if read_count < 2*4000/3:
+					if read_count < 2*4000/3:  #using two-thirds data for training
 						extract_kmer(temp_seq,ln,kmer_dict,tot_kmer_count)
 				temp_seq = ""
 				read_count += 1
@@ -86,7 +86,7 @@ if __name__ == '__main__':
 				dummy_arr.append(k_dict_dict[i])
 			print str(dummy_arr) + ","
 
-	# print "-------------------transition------------------------"
+	# print "-------------------emission------------------------"
 	bp = ['A','C','G','T']
 	dna = ln*[bp]
 	kmers = list(itertools.product(*dna))
